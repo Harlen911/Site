@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meu Primeiro Site</title>
-  <!-- Estilos BEM SIMPLES: tudo em um arquivo para facilitar o estudo -->
+
   <style>
     :root { --bg: #f7f7fb; --ink: #1f2937; --accent: #3b82f6; --card: #ffffff; }
     * { box-sizing: border-box; }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <!-- CABEÇALHO com navegação simples -->
+
   <header>
     <div class="container" style="display:flex; align-items:center; justify-content:space-between;">
       <div class="brand">Meu Site</div>
@@ -39,7 +39,6 @@
     </div>
   </header>
 
-  <!-- Seção HERO (destaque inicial) -->
   <main id="inicio" class="container">
     <section class="hero">
       <h1>Opa</h1>
@@ -47,7 +46,6 @@
       <button class="btn" id="btn-oi">Clique para dizer oi</button>
     </section>
 
-    <!-- Seção SOBRE -->
     <section id="sobre">
       <h2>Sobre</h2>
       <p>tamo ai tamo ai</p>
@@ -58,7 +56,6 @@
       </div>
     </section>
 
-    <!-- Seção PROJETOS (exemplo de cards) -->
     <section id="projetos">
       <h2>Projetos</h2>
       <div class="grid">
@@ -80,7 +77,6 @@
       </div>
     </section>
 
-    <!-- Seção CONTATO (formulário simples, não envia de verdade) -->
     <section id="contato">
       <h2>Contato</h2>
       <form onsubmit="alert('Ta enviado pae! (exemplo)'); return false;" class="card">
@@ -105,9 +101,7 @@
     <div class="container">Feito por mim</div>
   </footer>
 
-  <!-- JavaScript BEM SIMPLES -->
   <script>
-    // Quando o usuário clica no botão, mostramos um alerta
     document.getElementById('btn-oi').addEventListener('click', function() {
       alert('foda voce clicou :)');
     });
