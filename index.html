@@ -19,38 +19,40 @@
             align-items: center;
             padding: 20px;
         }
-        .container {
+        .login-container {
             background: white;
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
+            text-align: center;
+        }
+        .main-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            display: none;
         }
         h1 {
             color: #667eea;
             margin-bottom: 10px;
-            text-align: center;
         }
         .subtitle {
             color: #666;
-            text-align: center;
             margin-bottom: 30px;
             font-size: 14px;
         }
-        .admin-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        .admin-section h2 {
-            color: #333;
-            font-size: 18px;
-            margin-bottom: 15px;
+        .lock-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
         }
         .form-group {
             margin-bottom: 20px;
+            text-align: left;
         }
         label {
             display: block;
@@ -58,7 +60,7 @@
             color: #333;
             font-weight: 500;
         }
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -66,7 +68,7 @@
             font-size: 14px;
             transition: border-color 0.3s;
         }
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -91,11 +93,16 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-        button:active {
-            transform: translateY(0);
+        .section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
         }
-        .script-list {
-            margin-top: 20px;
+        .section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
         }
         .script-item {
             background: white;
@@ -108,21 +115,29 @@
             color: #667eea;
             font-size: 16px;
             margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .script-url {
             background: #f8f9fa;
             padding: 10px;
             border-radius: 5px;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 11px;
             word-break: break-all;
             color: #666;
+            margin-top: 8px;
         }
-        .delete-btn {
-            margin-top: 10px;
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+            width: auto;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .btn-danger {
             background: #dc3545;
-            padding: 8px;
-            font-size: 14px;
         }
         .alert {
             padding: 12px;
@@ -141,33 +156,63 @@
             border: 1px solid #f5c6cb;
         }
         .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #2196F3;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
             padding: 15px;
             margin-top: 20px;
             border-radius: 5px;
         }
         .info-box h3 {
-            color: #2196F3;
+            color: #856404;
             font-size: 16px;
             margin-bottom: 8px;
         }
-        .info-box code {
-            background: #fff;
-            padding: 2px 6px;
-            border-radius: 3px;
+        .code-box {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
             font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        .logout-btn {
+            background: #6c757d;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔐 Script Loader</h1>
+    <div class="login-container" id="loginContainer">
+        <div class="lock-icon">🔐</div>
+        <h1>Acesso Restrito</h1>
+        <p class="subtitle">Digite a senha mestra para acessar</p>
+        
+        <div id="loginAlert"></div>
+        
+        <div class="form-group">
+            <input type="password" id="masterPassword" placeholder="Senha Mestra" onkeypress="if(event.key==='Enter')login()">
+        </div>
+        
+        <button onclick="login()">🔓 Entrar</button>
+        
+        <div class="info-box" style="margin-top: 30px; text-align: left;">
+            <h3>ℹ️ Primeira vez?</h3>
+            <p style="color: #856404; font-size: 13px; margin-top: 8px;">
+                A senha mestra padrão é: <strong>admin123</strong><br>
+                Você pode alterá-la depois de fazer login.
+            </p>
+        </div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+        <h1>🔐 Script Manager</h1>
         <p class="subtitle">Gerencie seus scripts de forma segura</p>
         
         <div id="alertBox"></div>
         
-        <div class="admin-section">
+        <div class="section">
             <h2>➕ Adicionar Novo Script</h2>
             
             <div class="form-group">
@@ -181,148 +226,227 @@
             </div>
             
             <div class="form-group">
-                <label for="password">Senha de Acesso:</label>
-                <input type="password" id="password" placeholder="Crie uma senha forte">
+                <label for="scriptKey">Chave de Acesso (gerada automaticamente):</label>
+                <input type="text" id="scriptKey" readonly style="background: #f0f0f0;">
+                <button onclick="generateKey()" class="btn-small" style="margin-top: 10px; width: 100%;">🔄 Gerar Nova Chave</button>
             </div>
             
             <button onclick="saveScript()">💾 Salvar Script</button>
         </div>
         
-        <div class="script-list" id="scriptList"></div>
+        <div class="section">
+            <h2>📦 Seus Scripts</h2>
+            <div id="scriptList"></div>
+        </div>
+        
+        <div class="section">
+            <h2>⚙️ Configurações</h2>
+            
+            <div class="form-group">
+                <label for="newMasterPassword">Alterar Senha Mestra:</label>
+                <input type="password" id="newMasterPassword" placeholder="Nova senha mestra">
+            </div>
+            
+            <button onclick="changeMasterPassword()">🔑 Alterar Senha</button>
+            
+            <button onclick="logout()" class="logout-btn">🚪 Sair</button>
+        </div>
         
         <div class="info-box">
             <h3>📋 Como usar no Roblox:</h3>
-            <p style="color: #555; font-size: 14px; margin-top: 8px;">
-                Copie a URL gerada e use no seu executor:
+            <div class="code-box">loadstring(game:HttpGet('SUA_URL_AQUI'))();</div>
+            <p style="color: #856404; font-size: 13px; margin-top: 10px;">
+                ⚠️ <strong>Importante:</strong> Mantenha suas chaves em segredo! Elas são como senhas.
             </p>
-            <code style="display: block; margin-top: 10px;">
-                loadstring(game:HttpGet('URL_AQUI'))()
-            </code>
         </div>
     </div>
 
     <script>
-        // Função para criptografar (simples XOR para exemplo)
-        function encrypt(text, password) {
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-                result += String.fromCharCode(
-                    text.charCodeAt(i) ^ password.charCodeAt(i % password.length)
-                );
+        const STORAGE_KEY = 'scriptLoaderData';
+        const DEFAULT_PASSWORD = 'admin123';
+        let isAuthenticated = false;
+
+        // Gerar chave aleatória
+        function generateRandomKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let key = '';
+            for (let i = 0; i < 32; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            return btoa(result); // Base64
+            return key;
         }
 
-        function decrypt(encrypted, password) {
-            try {
-                const text = atob(encrypted);
-                let result = '';
-                for (let i = 0; i < text.length; i++) {
-                    result += String.fromCharCode(
-                        text.charCodeAt(i) ^ password.charCodeAt(i % password.length)
-                    );
-                }
-                return result;
-            } catch(e) {
-                return null;
+        // Inicializar dados
+        function initData() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (!data) {
+                const initialData = {
+                    masterPassword: DEFAULT_PASSWORD,
+                    scripts: {}
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
             }
+        }
+
+        // Obter dados
+        function getData() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        }
+
+        // Salvar dados
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // Login
+        function login() {
+            const password = document.getElementById('masterPassword').value;
+            const data = getData();
+            
+            if (password === data.masterPassword) {
+                isAuthenticated = true;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                generateKey();
+                loadScripts();
+            } else {
+                showLoginAlert('❌ Senha incorreta!', 'error');
+            }
+        }
+
+        // Logout
+        function logout() {
+            isAuthenticated = false;
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('masterPassword').value = '';
+        }
+
+        // Gerar nova chave
+        function generateKey() {
+            document.getElementById('scriptKey').value = generateRandomKey();
         }
 
         // Salvar script
         function saveScript() {
+            if (!isAuthenticated) return;
+            
             const name = document.getElementById('scriptName').value.trim();
             const code = document.getElementById('scriptCode').value.trim();
-            const password = document.getElementById('password').value.trim();
+            const key = document.getElementById('scriptKey').value.trim();
             
-            if (!name || !code || !password) {
-                showAlert('Por favor, preencha todos os campos!', 'error');
+            if (!name || !code || !key) {
+                showAlert('❌ Preencha todos os campos!', 'error');
                 return;
             }
             
-            // Criptografar o código
-            const encrypted = encrypt(code, password);
+            const data = getData();
+            data.scripts[name] = { code, key };
+            saveData(data);
             
-            // Salvar no localStorage
-            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            scripts[name] = encrypted;
-            localStorage.setItem('scripts', JSON.stringify(scripts));
-            
-            // Limpar formulário
             document.getElementById('scriptName').value = '';
             document.getElementById('scriptCode').value = '';
-            document.getElementById('password').value = '';
+            generateKey();
             
-            showAlert('Script salvo com sucesso! ✅', 'success');
+            showAlert('✅ Script salvo com sucesso!', 'success');
             loadScripts();
         }
 
-        // Carregar lista de scripts
+        // Carregar scripts
         function loadScripts() {
-            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const data = getData();
             const listDiv = document.getElementById('scriptList');
             
-            if (Object.keys(scripts).length === 0) {
-                listDiv.innerHTML = '';
+            if (Object.keys(data.scripts).length === 0) {
+                listDiv.innerHTML = '<p style="color: #999; text-align: center;">Nenhum script adicionado ainda.</p>';
                 return;
             }
             
-            listDiv.innerHTML = '<h2 style="color: #333; font-size: 18px; margin-bottom: 15px;">📦 Seus Scripts</h2>';
+            listDiv.innerHTML = '';
             
-            for (const [name, encrypted] of Object.entries(scripts)) {
-                const url = `${window.location.origin}${window.location.pathname}?script=${encodeURIComponent(name)}&key=PASSWORD`;
+            for (const [name, script] of Object.entries(data.scripts)) {
+                const url = `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(name)}&k=${script.key}`;
                 
-                listDiv.innerHTML += `
-                    <div class="script-item">
-                        <h3>${name}</h3>
-                        <div class="script-url">${url}</div>
-                        <button class="delete-btn" onclick="deleteScript('${name}')">🗑️ Deletar</button>
+                const item = document.createElement('div');
+                item.className = 'script-item';
+                item.innerHTML = `
+                    <h3>
+                        ${name}
+                        <button class="btn-small btn-danger" onclick="deleteScript('${name}')">🗑️ Deletar</button>
+                    </h3>
+                    <div class="script-url">${url}</div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        🔑 Chave: <code style="background: #fff; padding: 2px 6px; border-radius: 3px;">${script.key}</code>
                     </div>
                 `;
+                listDiv.appendChild(item);
             }
         }
 
         // Deletar script
         function deleteScript(name) {
-            if (!confirm(`Tem certeza que deseja deletar "${name}"?`)) return;
+            if (!confirm(`Deletar "${name}"?`)) return;
             
-            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            delete scripts[name];
-            localStorage.setItem('scripts', JSON.stringify(scripts));
+            const data = getData();
+            delete data.scripts[name];
+            saveData(data);
             
-            showAlert('Script deletado!', 'success');
+            showAlert('✅ Script deletado!', 'success');
             loadScripts();
         }
 
-        // Mostrar alerta
+        // Alterar senha mestra
+        function changeMasterPassword() {
+            const newPassword = document.getElementById('newMasterPassword').value.trim();
+            
+            if (!newPassword || newPassword.length < 6) {
+                showAlert('❌ Senha deve ter pelo menos 6 caracteres!', 'error');
+                return;
+            }
+            
+            const data = getData();
+            data.masterPassword = newPassword;
+            saveData(data);
+            
+            document.getElementById('newMasterPassword').value = '';
+            showAlert('✅ Senha mestra alterada com sucesso!', 'success');
+        }
+
+        // Alertas
         function showAlert(message, type) {
             const alertBox = document.getElementById('alertBox');
             alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => alertBox.innerHTML = '', 3000);
+            setTimeout(() => alertBox.innerHTML = '', 4000);
         }
 
-        // Quando a página carregar com parâmetros (acesso via loadstring)
+        function showLoginAlert(message, type) {
+            const alertBox = document.getElementById('loginAlert');
+            alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => alertBox.innerHTML = '', 4000);
+        }
+
+        // Detectar acesso via executor (modo API)
         window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const scriptName = params.get('script');
-            const key = params.get('key');
+            initData();
             
-            if (scriptName && key) {
-                // Modo API - retornar script
-                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-                const encrypted = scripts[scriptName];
+            const params = new URLSearchParams(window.location.search);
+            const scriptName = params.get('s');
+            const scriptKey = params.get('k');
+            
+            // Se tiver parâmetros, é requisição de executor
+            if (scriptName && scriptKey) {
+                const data = getData();
+                const script = data.scripts[scriptName];
                 
-                if (encrypted) {
-                    const decrypted = decrypt(encrypted, key);
-                    if (decrypted) {
-                        document.body.innerHTML = `<pre>${decrypted}</pre>`;
-                        return;
-                    }
+                if (script && script.key === scriptKey) {
+                    // Retornar apenas o código Lua (raw)
+                    document.body.innerHTML = `<pre style="margin:0;font-family:monospace;white-space:pre-wrap;">${script.code}</pre>`;
+                } else {
+                    document.body.innerHTML = '<pre>-- Acesso negado: script não encontrado ou chave inválida</pre>';
                 }
-                
-                document.body.innerHTML = '<pre>-- Acesso negado ou senha incorreta</pre>';
             } else {
-                // Modo normal - mostrar interface
-                loadScripts();
+                // Modo normal - mostrar login
+                document.getElementById('loginContainer').style.display = 'flex';
             }
         });
     </script>
