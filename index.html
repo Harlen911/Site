@@ -33,7 +33,7 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             display: none;
         }
@@ -129,6 +129,31 @@
             color: #666;
             margin-top: 8px;
         }
+        .script-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .info-badge {
+            background: #e7f3ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .info-badge.expired {
+            background: #ffe7e7;
+            color: #c92a2a;
+        }
+        .info-badge.active {
+            background: #e7ffe7;
+            color: #2a9d2a;
+        }
         .btn-small {
             padding: 6px 12px;
             font-size: 13px;
@@ -138,6 +163,10 @@
         }
         .btn-danger {
             background: #dc3545;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
         }
         .alert {
             padding: 12px;
@@ -181,6 +210,16 @@
             background: #6c757d;
             margin-top: 20px;
         }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -207,8 +246,8 @@
     </div>
 
     <div class="main-container" id="mainContainer">
-        <h1>🔐 Script Manager</h1>
-        <p class="subtitle">Gerencie seus scripts de forma segura</p>
+        <h1>🔐 Script Manager Pro</h1>
+        <p class="subtitle">Sistema com proteção avançada</p>
         
         <div id="alertBox"></div>
         
@@ -225,8 +264,20 @@
                 <textarea id="scriptCode" placeholder="-- Seu código Lua aqui&#10;print('Hello World')"></textarea>
             </div>
             
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="maxUses">Máximo de Usos (0 = ilimitado):</label>
+                    <input type="number" id="maxUses" value="0" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="expiryHours">Expirar em (horas, 0 = nunca):</label>
+                    <input type="number" id="expiryHours" value="24" min="0">
+                </div>
+            </div>
+            
             <div class="form-group">
-                <label for="scriptKey">Chave de Acesso (gerada automaticamente):</label>
+                <label for="scriptKey">Chave de Acesso:</label>
                 <input type="text" id="scriptKey" readonly style="background: #f0f0f0;">
                 <button onclick="generateKey()" class="btn-small" style="margin-top: 10px; width: 100%;">🔄 Gerar Nova Chave</button>
             </div>
@@ -253,10 +304,12 @@
         </div>
         
         <div class="info-box">
-            <h3>📋 Como usar no Roblox:</h3>
-            <div class="code-box">loadstring(game:HttpGet('SUA_URL_AQUI'))();</div>
-            <p style="color: #856404; font-size: 13px; margin-top: 10px;">
-                ⚠️ <strong>Importante:</strong> Mantenha suas chaves em segredo! Elas são como senhas.
+            <h3>🛡️ Recursos de Segurança:</h3>
+            <p style="color: #856404; font-size: 13px; margin-top: 8px;">
+                ✅ <strong>Limite de usos:</strong> Scripts podem ter número máximo de execuções<br>
+                ✅ <strong>Expiração:</strong> Chaves expiram automaticamente após tempo definido<br>
+                ✅ <strong>Chaves únicas:</strong> Cada script tem chave aleatória de 32 caracteres<br>
+                ⚠️ <strong>Renovação:</strong> Scripts expirados podem ser renovados com nova chave
             </p>
         </div>
     </div>
@@ -266,7 +319,6 @@
         const DEFAULT_PASSWORD = 'admin123';
         let isAuthenticated = false;
 
-        // Gerar chave aleatória
         function generateRandomKey() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let key = '';
@@ -276,7 +328,6 @@
             return key;
         }
 
-        // Inicializar dados
         function initData() {
             const data = localStorage.getItem(STORAGE_KEY);
             if (!data) {
@@ -288,17 +339,14 @@
             }
         }
 
-        // Obter dados
         function getData() {
             return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
         }
 
-        // Salvar dados
         function saveData(data) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        // Login
         function login() {
             const password = document.getElementById('masterPassword').value;
             const data = getData();
@@ -314,7 +362,6 @@
             }
         }
 
-        // Logout
         function logout() {
             isAuthenticated = false;
             document.getElementById('loginContainer').style.display = 'flex';
@@ -322,37 +369,77 @@
             document.getElementById('masterPassword').value = '';
         }
 
-        // Gerar nova chave
         function generateKey() {
             document.getElementById('scriptKey').value = generateRandomKey();
         }
 
-        // Salvar script
         function saveScript() {
             if (!isAuthenticated) return;
             
             const name = document.getElementById('scriptName').value.trim();
             const code = document.getElementById('scriptCode').value.trim();
             const key = document.getElementById('scriptKey').value.trim();
+            const maxUses = parseInt(document.getElementById('maxUses').value) || 0;
+            const expiryHours = parseInt(document.getElementById('expiryHours').value) || 0;
             
             if (!name || !code || !key) {
-                showAlert('❌ Preencha todos os campos!', 'error');
+                showAlert('❌ Preencha todos os campos obrigatórios!', 'error');
                 return;
             }
             
             const data = getData();
-            data.scripts[name] = { code, key };
+            
+            const expiryTime = expiryHours > 0 ? Date.now() + (expiryHours * 60 * 60 * 1000) : 0;
+            
+            data.scripts[name] = {
+                code,
+                key,
+                maxUses,
+                usesCount: 0,
+                expiryTime,
+                createdAt: Date.now()
+            };
             saveData(data);
             
             document.getElementById('scriptName').value = '';
             document.getElementById('scriptCode').value = '';
+            document.getElementById('maxUses').value = '0';
+            document.getElementById('expiryHours').value = '24';
             generateKey();
             
             showAlert('✅ Script salvo com sucesso!', 'success');
             loadScripts();
         }
 
-        // Carregar scripts
+        function isScriptValid(script) {
+            if (script.maxUses > 0 && script.usesCount >= script.maxUses) {
+                return { valid: false, reason: 'Limite de usos atingido' };
+            }
+            
+            if (script.expiryTime > 0 && Date.now() > script.expiryTime) {
+                return { valid: false, reason: 'Script expirado' };
+            }
+            
+            return { valid: true };
+        }
+
+        function formatTimeRemaining(expiryTime) {
+            if (expiryTime === 0) return 'Nunca expira';
+            
+            const remaining = expiryTime - Date.now();
+            if (remaining <= 0) return 'Expirado';
+            
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (hours > 24) {
+                const days = Math.floor(hours / 24);
+                return `${days}d ${hours % 24}h`;
+            }
+            
+            return `${hours}h ${minutes}m`;
+        }
+
         function loadScripts() {
             const data = getData();
             const listDiv = document.getElementById('scriptList');
@@ -366,24 +453,56 @@
             
             for (const [name, script] of Object.entries(data.scripts)) {
                 const url = `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(name)}&k=${script.key}`;
+                const validity = isScriptValid(script);
+                
+                const statusBadge = validity.valid 
+                    ? '<span class="info-badge active">✅ Ativo</span>'
+                    : `<span class="info-badge expired">❌ ${validity.reason}</span>`;
+                
+                const usageInfo = script.maxUses > 0 
+                    ? `<span class="info-badge">📊 ${script.usesCount}/${script.maxUses} usos</span>`
+                    : `<span class="info-badge">📊 ${script.usesCount} usos</span>`;
+                
+                const expiryInfo = `<span class="info-badge">⏰ ${formatTimeRemaining(script.expiryTime)}</span>`;
                 
                 const item = document.createElement('div');
                 item.className = 'script-item';
                 item.innerHTML = `
                     <h3>
                         ${name}
-                        <button class="btn-small btn-danger" onclick="deleteScript('${name}')">🗑️ Deletar</button>
+                        <div>
+                            ${validity.valid ? '' : '<button class="btn-small btn-warning" onclick="renewScript(\'' + name + '\')">🔄 Renovar</button>'}
+                            <button class="btn-small btn-danger" onclick="deleteScript('${name}')">🗑️ Deletar</button>
+                        </div>
                     </h3>
                     <div class="script-url">${url}</div>
-                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                        🔑 Chave: <code style="background: #fff; padding: 2px 6px; border-radius: 3px;">${script.key}</code>
+                    <div class="script-info">
+                        ${statusBadge}
+                        ${usageInfo}
+                        ${expiryInfo}
                     </div>
                 `;
                 listDiv.appendChild(item);
             }
         }
 
-        // Deletar script
+        function renewScript(name) {
+            const data = getData();
+            const script = data.scripts[name];
+            
+            if (!script) return;
+            
+            script.key = generateRandomKey();
+            script.usesCount = 0;
+            
+            const hours = 24;
+            script.expiryTime = Date.now() + (hours * 60 * 60 * 1000);
+            
+            saveData(data);
+            showAlert(`✅ Script "${name}" renovado com nova chave!`, 'success');
+            loadScripts();
+        }
+
         function deleteScript(name) {
             if (!confirm(`Deletar "${name}"?`)) return;
             
@@ -395,7 +514,6 @@
             loadScripts();
         }
 
-        // Alterar senha mestra
         function changeMasterPassword() {
             const newPassword = document.getElementById('newMasterPassword').value.trim();
             
@@ -412,7 +530,6 @@
             showAlert('✅ Senha mestra alterada com sucesso!', 'success');
         }
 
-        // Alertas
         function showAlert(message, type) {
             const alertBox = document.getElementById('alertBox');
             alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
@@ -425,7 +542,6 @@
             setTimeout(() => alertBox.innerHTML = '', 4000);
         }
 
-        // Detectar acesso via executor (modo API)
         window.addEventListener('DOMContentLoaded', () => {
             initData();
             
@@ -433,19 +549,25 @@
             const scriptName = params.get('s');
             const scriptKey = params.get('k');
             
-            // Se tiver parâmetros, é requisição de executor
             if (scriptName && scriptKey) {
                 const data = getData();
                 const script = data.scripts[scriptName];
                 
                 if (script && script.key === scriptKey) {
-                    // Retornar apenas o código Lua (raw)
-                    document.body.innerHTML = `<pre style="margin:0;font-family:monospace;white-space:pre-wrap;">${script.code}</pre>`;
+                    const validity = isScriptValid(script);
+                    
+                    if (validity.valid) {
+                        script.usesCount++;
+                        saveData(data);
+                        
+                        document.body.innerHTML = `<pre style="margin:0;font-family:monospace;white-space:pre-wrap;">${script.code}</pre>`;
+                    } else {
+                        document.body.innerHTML = `<pre>-- Acesso negado: ${validity.reason}</pre>`;
+                    }
                 } else {
                     document.body.innerHTML = '<pre>-- Acesso negado: script não encontrado ou chave inválida</pre>';
                 }
             } else {
-                // Modo normal - mostrar login
                 document.getElementById('loginContainer').style.display = 'flex';
             }
         });
